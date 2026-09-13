@@ -145,7 +145,7 @@
         }
     });
 
-    fetch("../puzzle.txt")
+    fetch("../puzzle.txt", { cache: "no-store" })
         .then(function (response) {
             if (!response.ok) {
                 throw new Error("Unable to load puzzle file");
