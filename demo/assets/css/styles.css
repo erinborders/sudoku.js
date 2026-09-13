@@ -99,6 +99,7 @@ h1 {
 }
 
 .sudoku-board {
+    container-type: inline-size;
     display: grid;
     grid-template-columns: repeat(9, minmax(0, 1fr));
     width: min(100%, calc(100dvh - 130px));
@@ -123,7 +124,7 @@ h1 {
     color: #245a72;
     background: #ffffff;
     font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(1.25rem, 6.8vw, 2.25rem);
+    font-size: clamp(1rem, 6.5cqi, 4rem);
     line-height: 1;
     text-align: center;
     caret-color: var(--accent);
