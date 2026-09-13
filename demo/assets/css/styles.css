@@ -339,3 +339,79 @@ button:disabled {
         grid-template-columns: 1fr;
     }
 }
+
+@media (min-aspect-ratio: 4 / 3) and (max-width: 639px) {
+    .game-shell {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 6px;
+        padding: 6px;
+    }
+
+    .game-header {
+        align-items: center;
+        align-self: auto;
+        flex-direction: row;
+        justify-content: space-between;
+        width: calc(100% - 104px);
+        min-height: 30px;
+        margin: 0;
+        padding: 0;
+    }
+
+    .game-header .eyebrow {
+        display: none;
+    }
+
+    .game-header h1 {
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    .puzzle-count {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        text-align: left;
+    }
+
+    .puzzle-count strong {
+        font-size: 1rem;
+    }
+
+    .game-area {
+        grid-template-columns: minmax(0, 1fr) 120px;
+        grid-template-rows: minmax(0, 1fr);
+        gap: 8px;
+        padding: 6px;
+    }
+
+    .sudoku-board {
+        width: min(100%, calc(100dvh - 54px));
+    }
+
+    .game-controls {
+        gap: 8px;
+    }
+
+    .status {
+        font-size: 0.75rem;
+    }
+
+    .button-row {
+        gap: 5px;
+    }
+
+    button {
+        min-height: 34px;
+        padding: 5px 7px;
+        font-size: 0.75rem;
+    }
+
+    .header-toggle {
+        top: 6px;
+        right: 6px;
+        min-height: 30px;
+        padding: 4px 8px;
+    }
+}
