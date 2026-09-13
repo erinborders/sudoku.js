@@ -4,11 +4,19 @@
         <meta charset="utf-8">
         <title>Sudoku</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="assets/css/styles.css" rel="stylesheet">
+        <link href="assets/css/styles.css?v=4" rel="stylesheet">
     </head>
     <body>
+        <button
+            id="toggle-header"
+            class="header-toggle"
+            type="button"
+            aria-controls="game-header"
+            aria-expanded="true"
+        >Hide header</button>
+
         <main class="game-shell">
-            <header class="game-header">
+            <header id="game-header" class="game-header">
                 <div>
                     <p class="eyebrow">Very hard collection</p>
                     <h1>Sudoku</h1>
@@ -37,6 +45,6 @@
             </div>
         </main>
 
-        <script src="assets/js/app.js"></script>
+        <script src="assets/js/app.js?v=3"></script>
     </body>
 </html>

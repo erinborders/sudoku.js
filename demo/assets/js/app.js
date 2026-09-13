@@ -2,6 +2,8 @@
     "use strict";
 
     var boardElement = document.getElementById("sudoku-board");
+    var headerElement = document.getElementById("game-header");
+    var headerToggle = document.getElementById("toggle-header");
     var puzzleNumberElement = document.getElementById("puzzle-number");
     var statusElement = document.getElementById("status");
     var errorElement = document.getElementById("load-error");
@@ -11,6 +13,13 @@
 
     var puzzles = [];
     var currentPuzzleIndex = 0;
+
+    function setHeaderVisible(visible) {
+        headerElement.hidden = !visible;
+        headerToggle.textContent = visible ? "Hide header" : "Show header";
+        headerToggle.setAttribute("aria-expanded", visible);
+        localStorage.setItem("sudoku-header-visible", visible);
+    }
 
     function createDigitLookup() {
         var letters = "abcdefghi";
@@ -113,6 +122,12 @@
         currentPuzzleIndex = index;
         renderPuzzle();
     }
+
+    headerToggle.addEventListener("click", function () {
+        setHeaderVisible(headerElement.hidden);
+    });
+
+    setHeaderVisible(localStorage.getItem("sudoku-header-visible") !== "false");
 
     previousButton.addEventListener("click", function () {
         if (currentPuzzleIndex > 0) {
