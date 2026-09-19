@@ -84,6 +84,32 @@
         updateStatus();
     }
 
+    function handleNavigation(event) {
+        var input = event.target;
+        var index = Number(input.dataset.cellIndex);
+        var row = Math.floor(index / 9);
+        var column = index % 9;
+        var nextIndex = index;
+
+        if (event.key === "ArrowUp" && row > 0) {
+            nextIndex -= 9;
+        } else if (event.key === "ArrowDown" && row < 8) {
+            nextIndex += 9;
+        } else if (event.key === "ArrowLeft" && column > 0) {
+            nextIndex -= 1;
+        } else if (event.key === "ArrowRight" && column < 8) {
+            nextIndex += 1;
+        } else if (!event.key.startsWith("Arrow")) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (nextIndex !== index) {
+            boardElement.querySelector('[data-cell-index="' + nextIndex + '"]').focus();
+        }
+    }
+
     function renderPuzzle() {
         var entry = puzzles[currentPuzzleIndex];
         boardElement.replaceChildren();
@@ -102,8 +128,10 @@
             input.value = isGiven ? entry.puzzle[index] : "";
             input.readOnly = isGiven;
             input.dataset.answer = entry.solution[index];
+            input.dataset.cellIndex = index;
             input.setAttribute("role", "gridcell");
             input.setAttribute("aria-label", "Row " + row + ", column " + column);
+            input.addEventListener("keydown", handleNavigation);
 
             if (!isGiven) {
                 input.addEventListener("input", handleInput);
