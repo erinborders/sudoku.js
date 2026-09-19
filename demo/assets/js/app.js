@@ -7,12 +7,14 @@
     var puzzleNumberElement = document.getElementById("puzzle-number");
     var statusElement = document.getElementById("status");
     var errorElement = document.getElementById("load-error");
+    var notesButton = document.getElementById("notes");
     var previousButton = document.getElementById("previous");
     var resetButton = document.getElementById("reset");
     var nextButton = document.getElementById("next");
 
     var puzzles = [];
     var currentPuzzleIndex = 0;
+    var notesMode = false;
 
     function setHeaderVisible(visible) {
         headerElement.hidden = !visible;
@@ -64,7 +66,7 @@
     }
 
     function updateStatus() {
-        var inputs = boardElement.querySelectorAll(".square:not(.given)");
+        var inputs = boardElement.querySelectorAll(".cell:not(.given) .square");
         var completed = Array.prototype.every.call(inputs, function (input) {
             return input.value === input.dataset.answer;
         });
@@ -73,14 +75,81 @@
         statusElement.textContent = completed ? "Puzzle complete." : "Incorrect entries appear in red.";
     }
 
+    function setNotesMode(enabled) {
+        notesMode = enabled;
+        notesButton.classList.toggle("active", enabled);
+        notesButton.setAttribute("aria-pressed", enabled);
+    }
+
+    function renderNotes(input) {
+        var notes = input.dataset.notes || "";
+        var noteElements = input.parentElement.querySelectorAll(".note");
+
+        Array.prototype.forEach.call(noteElements, function (noteElement, index) {
+            var digit = String(index + 1);
+            noteElement.textContent = notes.includes(digit) ? digit : "";
+        });
+
+        input.parentElement.classList.toggle("has-notes", notes !== "" && input.value === "");
+    }
+
+    function toggleNote(input, digit) {
+        var notes = input.dataset.notes || "";
+
+        input.dataset.notes = notes.includes(digit) ?
+            notes.replace(digit, "") :
+            (notes + digit).split("").sort().join("");
+        input.value = "";
+        input.classList.remove("incorrect");
+        input.setAttribute("aria-invalid", "false");
+        renderNotes(input);
+        updateStatus();
+    }
+
+    function removePeerNotes(input, digit) {
+        var index = Number(input.dataset.cellIndex);
+        var row = Math.floor(index / 9);
+        var column = index % 9;
+
+        Array.prototype.forEach.call(boardElement.querySelectorAll(".square"), function (peer) {
+            var peerIndex = Number(peer.dataset.cellIndex);
+            var peerRow = Math.floor(peerIndex / 9);
+            var peerColumn = peerIndex % 9;
+            var sameBox = Math.floor(peerRow / 3) === Math.floor(row / 3) &&
+                Math.floor(peerColumn / 3) === Math.floor(column / 3);
+
+            if (peer !== input && (peerRow === row || peerColumn === column || sameBox) &&
+                    (peer.dataset.notes || "").includes(digit)) {
+                peer.dataset.notes = peer.dataset.notes.replace(digit, "");
+                renderNotes(peer);
+            }
+        });
+    }
+
     function handleInput(event) {
         var input = event.target;
         input.value = input.value.replace(/[^1-9]/g, "").slice(-1);
+
+        if (notesMode && input.value !== "") {
+            toggleNote(input, input.value);
+            return;
+        }
+
         input.classList.toggle(
             "incorrect",
             input.value !== "" && input.value !== input.dataset.answer
         );
         input.setAttribute("aria-invalid", input.classList.contains("incorrect"));
+        if (input.value === input.dataset.answer) {
+            input.dataset.notes = "";
+            renderNotes(input);
+            removePeerNotes(input, input.value);
+        } else if (input.value === "") {
+            renderNotes(input);
+        } else {
+            input.parentElement.classList.remove("has-notes");
+        }
+
         updateStatus();
     }
 
@@ -90,6 +159,12 @@
         var row = Math.floor(index / 9);
         var column = index % 9;
         var nextIndex = index;
+
+        if (notesMode && !input.readOnly && /^[1-9]$/.test(event.key)) {
+            event.preventDefault();
+            toggleNote(input, event.key);
+            return;
+        }
 
         if (event.key === "ArrowUp" && row > 0) {
             nextIndex -= 9;
@@ -115,12 +190,25 @@
         boardElement.replaceChildren();
 
         for (var index = 0; index < 81; index += 1) {
+            var cell = document.createElement("div");
             var input = document.createElement("input");
+            var notes = document.createElement("span");
             var row = Math.floor(index / 9) + 1;
             var column = index % 9 + 1;
             var isGiven = entry.puzzle[index] !== ".";
 
-            input.className = "square" + (isGiven ? " given" : "");
+            cell.className = "cell" + (isGiven ? " given" : "");
+            cell.setAttribute("role", "gridcell");
+            notes.className = "cell-notes";
+            notes.setAttribute("aria-hidden", "true");
+
+            for (var noteIndex = 1; noteIndex <= 9; noteIndex += 1) {
+                var note = document.createElement("span");
+                note.className = "note";
+                notes.appendChild(note);
+            }
+
+            input.className = "square";
             input.type = "text";
             input.inputMode = "numeric";
             input.pattern = "[1-9]";
@@ -129,7 +217,7 @@
             input.readOnly = isGiven;
             input.dataset.answer = entry.solution[index];
             input.dataset.cellIndex = index;
-            input.setAttribute("role", "gridcell");
+            input.dataset.notes = "";
             input.setAttribute("aria-label", "Row " + row + ", column " + column);
             input.addEventListener("keydown", handleNavigation);
 
@@ -137,7 +225,9 @@
                 input.addEventListener("input", handleInput);
             }
 
-            boardElement.appendChild(input);
+            cell.appendChild(notes);
+            cell.appendChild(input);
+            boardElement.appendChild(cell);
         }
 
         puzzleNumberElement.textContent = (currentPuzzleIndex + 1) + " / " + puzzles.length;
@@ -156,6 +246,10 @@
     });
 
     setHeaderVisible(localStorage.getItem("sudoku-header-visible") !== "false");
+
+    notesButton.addEventListener("click", function () {
+        setNotesMode(!notesMode);
+    });
 
     previousButton.addEventListener("click", function () {
         if (currentPuzzleIndex > 0) {
